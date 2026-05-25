@@ -198,7 +198,7 @@ class Conversation(Base, TimestampMixin):
     
     # Participant info
     participant_ids: Mapped[list] = mapped_column(ARRAY(String), default=list)
-    metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
+    custom_metadata: Mapped[dict] = mapped_column(JSONB, default=dict, info={"alias": "metadata"})
     
     # Last message tracking
     last_message_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -279,8 +279,8 @@ class Message(Base, TimestampMixin):
     # Read receipts
     read_by: Mapped[list] = mapped_column(ARRAY(String), default=list)
     
-    # Metadata
-    metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
+    # Custom metadata (renamed from 'metadata' to avoid SQLAlchemy reserved word conflict)
+    custom_metadata: Mapped[dict] = mapped_column(JSONB, default=dict, info={"alias": "metadata"})
     
     # Relationships
     conversation: Mapped["Conversation"] = relationship(back_populates="messages")
@@ -333,8 +333,8 @@ class AuditLog(Base):
     ip_address: Mapped[str] = mapped_column(String(45), nullable=True)
     user_agent: Mapped[str] = mapped_column(String(500), nullable=True)
     
-    # Additional data
-    metadata: Mapped[dict] = mapped_column(JSONB, default=dict)
+    # Additional data (renamed from 'metadata' to avoid SQLAlchemy reserved word conflict)
+    custom_metadata: Mapped[dict] = mapped_column(JSONB, default=dict, info={"alias": "metadata"})
     
     timestamp: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
