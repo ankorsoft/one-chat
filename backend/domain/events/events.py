@@ -35,7 +35,7 @@ class EventType(str, Enum):
     MEDIA_SCAN_FAILED = "media.scan_failed"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class DomainEvent:
     """Base class for all domain events."""
     
@@ -60,7 +60,7 @@ class DomainEvent:
         }
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class MessageReceivedEvent(DomainEvent):
     """Event when a message is received from external channel."""
     
@@ -75,7 +75,7 @@ class MessageReceivedEvent(DomainEvent):
     aggregate_type: str = "Message"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class MessageSentEvent(DomainEvent):
     """Event when a message is sent to external channel."""
     
@@ -88,7 +88,7 @@ class MessageSentEvent(DomainEvent):
     aggregate_type: str = "Message"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class MessageFailedEvent(DomainEvent):
     """Event when message sending fails."""
     
@@ -103,7 +103,7 @@ class MessageFailedEvent(DomainEvent):
     aggregate_type: str = "Message"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class ChannelRateLimitedEvent(DomainEvent):
     """Event when channel hits rate limit."""
     
@@ -116,7 +116,7 @@ class ChannelRateLimitedEvent(DomainEvent):
     aggregate_type: str = "ChannelAccount"
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, kw_only=True)
 class MediaUploadedEvent(DomainEvent):
     """Event when media file is uploaded to S3."""
     

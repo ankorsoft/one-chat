@@ -22,7 +22,6 @@ coverage.xml
 *.log
 .pytest_cache/
 .mypy_cache/
-.hypothesis/
 
 # Distribution / packaging
 .Python
@@ -41,21 +40,26 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
 
-# Environment
-.env
-.env.local
-*.env*
-.env.*
-
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
-*.tmp
+*~
 
-# OS
+# Environment variables
+.env
+.env.local
+*.env.*
+
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 ```
