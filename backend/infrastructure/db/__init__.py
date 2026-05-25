@@ -1,13 +1,13 @@
 """Database package."""
 
 from backend.infrastructure.db.database import (
-    get_db_session,
-    init_db,
-    UnitOfWork,
+    get_database_manager,
+    get_session,
+    DatabaseManager,
 )
 
 __all__ = [
-    "get_db_session",
-    "init_db",
-    "UnitOfWork",
+    "get_database_manager",
+    "get_session",
+    "DatabaseManager",
 ]

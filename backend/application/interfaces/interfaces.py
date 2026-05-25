@@ -3,8 +3,8 @@ from abc import ABC, abstractmethod
 from typing import Optional, List, Any
 from datetime import datetime
 
-from backend.domain.entities import User, Workspace, Member, ChannelAccount, Conversation, Message
-from backend.domain.value_objects import ChannelType, ExternalId, SequenceId
+from backend.domain.models.entities import User, Workspace, Member, ChannelAccount, Conversation, Message
+from backend.domain.value_objects.value_objects import ChannelType, ExternalId, SequenceId
 
 
 class IUserRepository(ABC):

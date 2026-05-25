@@ -9,6 +9,8 @@ import argon2
 from argon2.exceptions import VerifyMismatchError
 from sqlalchemy import select, update, insert
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from backend.application.interfaces import (
     IUserRepository,
     IWorkspaceRepository,
@@ -20,15 +22,16 @@ from backend.application.interfaces import (
     IConversationRepository,
     IMessageRepository,
 )
-from backend.domain.entities import User, Workspace, ChannelAccount
 from backend.domain.models.entities import (
     User as UserModel,
     Workspace as WorkspaceModel,
     Member as MemberModel,
     Conversation as ConversationModel,
     Message as MessageModel,
+    ChannelAccount as ChannelAccountModel,
 )
-from backend.infrastructure.db.database import DatabaseSession
+
+DatabaseSession = AsyncSession
 
 
 class Argon2PasswordHasher(IPasswordHasher):
