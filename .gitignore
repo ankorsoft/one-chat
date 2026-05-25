@@ -1,49 +1,42 @@
 ```
 # Dependencies
-node_modules/
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-venv/
+*.py~
+
+# Virtual environments
 .venv/
-.env
-.env.local
-*.env.*
+venv/
+env/
 
 # Build artifacts
 dist/
 build/
-target/
 *.egg-info/
-
-# Editors
-.vscode/
-.idea/
-*.swp
-*.swo
 
 # Logs
 *.log
 
-# OS
-.DS_Store
-Thumbs.db
+# Environment files
+.env
+.env.local
+*.env.*
 
-# Testing
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+
+# Coverage reports
 .coverage
 htmlcov/
-.coverage.*
-.cache
-.pytest_cache/
+coverage/
+
+# Python cache
 .mypy_cache/
-
-# Alembic
-alembic/versions/001_initial.py
-
-# Frontend
-.next/
-out/
-.nuxt/
-public/dist/
+.pytest_cache/
 ```

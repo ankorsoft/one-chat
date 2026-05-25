@@ -3,10 +3,11 @@ import hashlib
 import hmac
 import jwt
 from datetime import datetime, timedelta
-from typing import Optional, Any
+from typing import Optional, Any, List
 
 import argon2
 from argon2.exceptions import VerifyMismatchError
+from sqlalchemy import select, update, insert
 
 from backend.application.interfaces import (
     IUserRepository,
@@ -16,8 +17,17 @@ from backend.application.interfaces import (
     ICacheService,
     IMediaStorage,
     IUnitOfWork,
+    IConversationRepository,
+    IMessageRepository,
 )
-from backend.domain.entities import User, Workspace
+from backend.domain.entities import User, Workspace, ChannelAccount
+from backend.domain.models.entities import (
+    User as UserModel,
+    Workspace as WorkspaceModel,
+    Member as MemberModel,
+    Conversation as ConversationModel,
+    Message as MessageModel,
+)
 from backend.infrastructure.db.database import DatabaseSession
 
 
@@ -253,7 +263,6 @@ class WorkspaceRepositoryImpl(IWorkspaceRepository):
         self.session = session
 
     async def get_by_id(self, workspace_id: int) -> Optional[Workspace]:
-        from backend.domain.models.entities import Workspace as WorkspaceModel
         result = await self.session.execute(
             select(WorkspaceModel).where(WorkspaceModel.id == workspace_id)
         )
@@ -263,7 +272,6 @@ class WorkspaceRepositoryImpl(IWorkspaceRepository):
         return None
 
     async def get_member_channels(self, workspace_id: int, user_id: int) -> List[ChannelAccount]:
-        from backend.domain.models.entities import ChannelAccount as ChannelAccountModel
         result = await self.session.execute(
             select(ChannelAccountModel).where(
                 ChannelAccountModel.workspace_id == workspace_id
@@ -273,9 +281,6 @@ class WorkspaceRepositoryImpl(IWorkspaceRepository):
         return [ChannelAccount.from_orm(ch) for ch in db_channels]
 
     async def create(self, name: str, owner_id: int) -> Workspace:
-        from backend.domain.models.entities import Workspace as WorkspaceModel
-        from sqlalchemy import insert
-
         stmt = insert(WorkspaceModel).values(
             name=name,
             owner_id=owner_id,
@@ -286,5 +291,115 @@ class WorkspaceRepositoryImpl(IWorkspaceRepository):
         return Workspace.from_orm(db_workspace)
 
 
-# Import select/update for type hints
-from sqlalchemy import select, update
+class ConversationRepositoryImpl(IConversationRepository):
+    def __init__(self, session: DatabaseSession):
+        self.session = session
+
+    async def get(self, conversation_id: int) -> Optional[ConversationModel]:
+        result = await self.session.execute(
+            select(ConversationModel).where(ConversationModel.id == conversation_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def list_by_workspace(self, workspace_id: int, limit: int = 50, offset: int = 0) -> List[ConversationModel]:
+        result = await self.session.execute(
+            select(ConversationModel)
+            .where(ConversationModel.workspace_id == workspace_id)
+            .order_by(ConversationModel.updated_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+        return result.scalars().all()
+
+    async def create(
+        self,
+        workspace_id: int,
+        channel_account_id: int,
+        external_chat_id: str,
+        metadata: Optional[dict] = None,
+    ) -> ConversationModel:
+        stmt = insert(ConversationModel).values(
+            workspace_id=workspace_id,
+            channel_account_id=channel_account_id,
+            external_chat_id=external_chat_id,
+            metadata=metadata,
+        ).returning(ConversationModel)
+        result = await self.session.execute(stmt)
+        conversation = result.scalar_one()
+        await self.session.flush()
+        return conversation
+
+
+class MessageRepositoryImpl(IMessageRepository):
+    def __init__(self, session: DatabaseSession):
+        self.session = session
+
+    async def get(self, message_id: int) -> Optional[MessageModel]:
+        result = await self.session.execute(
+            select(MessageModel).where(MessageModel.id == message_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def list_by_conversation(
+        self,
+        conversation_id: int,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> List[MessageModel]:
+        result = await self.session.execute(
+            select(MessageModel)
+            .where(MessageModel.conversation_id == conversation_id)
+            .order_by(MessageModel.sequence_id.asc())
+            .offset(offset)
+            .limit(limit)
+        )
+        return result.scalars().all()
+
+    async def create(
+        self,
+        conversation_id: int,
+        sender_id: Optional[int],
+        content: str,
+        media_urls: Optional[list[str]] = None,
+        external_message_id: Optional[str] = None,
+        sequence_id: Optional[int] = None,
+        direction: str = "inbound",
+        status: str = "pending",
+        metadata: Optional[dict] = None,
+    ) -> MessageModel:
+        # Get next sequence_id if not provided
+        if sequence_id is None:
+            from sqlalchemy import func
+            max_seq_result = await self.session.execute(
+                select(func.max(MessageModel.sequence_id))
+                .where(MessageModel.conversation_id == conversation_id)
+            )
+            max_seq = max_seq_result.scalar() or 0
+            sequence_id = max_seq + 1
+        
+        stmt = insert(MessageModel).values(
+            conversation_id=conversation_id,
+            sender_id=sender_id,
+            content=content,
+            media_urls=media_urls,
+            external_message_id=external_message_id,
+            sequence_id=sequence_id,
+            direction=direction,
+            status=status,
+            metadata=metadata,
+        ).returning(MessageModel)
+        result = await self.session.execute(stmt)
+        message = result.scalar_one()
+        await self.session.flush()
+        return message
+
+    async def update_status(self, message_id: int, status: str) -> Optional[MessageModel]:
+        stmt = (
+            update(MessageModel)
+            .where(MessageModel.id == message_id)
+            .values(status=status, updated_at=datetime.utcnow())
+            .returning(MessageModel)
+        )
+        result = await self.session.execute(stmt)
+        await self.session.flush()
+        return result.scalar_one_or_none()

@@ -37,6 +37,37 @@ class Role(str, Enum):
 
 
 @dataclass(frozen=True)
+class Email:
+    """Validated email value object."""
+    
+    value: str
+    
+    def __post_init__(self):
+        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(pattern, self.value):
+            raise ValueError("Invalid email format")
+    
+    @classmethod
+    def create(cls, value: str) -> "Email":
+        return cls(value=value.lower().strip())
+
+
+@dataclass(frozen=True)
+class PasswordHash:
+    """Password hash value object."""
+    
+    value: str
+    
+    def __post_init__(self):
+        if not self.value or len(self.value) < 10:
+            raise ValueError("Invalid password hash")
+    
+    @classmethod
+    def create(cls, value: str) -> "PasswordHash":
+        return cls(value=value)
+
+
+@dataclass(frozen=True)
 class ExternalId:
     """External message ID from channel provider."""
     
@@ -129,3 +160,4 @@ class MediaMimeType:
     def category(self) -> str:
         """Get media category (image, video, audio, document)."""
         return self.value.split("/")[0]
+

@@ -133,3 +133,57 @@ class IUnitOfWork(ABC):
     @abstractmethod
     def workspaces(self) -> IWorkspaceRepository:
         pass
+
+
+class IConversationRepository(ABC):
+    @abstractmethod
+    async def get(self, conversation_id: int) -> Optional[Any]:
+        pass
+
+    @abstractmethod
+    async def list_by_workspace(self, workspace_id: int, limit: int = 50, offset: int = 0) -> List[Any]:
+        pass
+
+    @abstractmethod
+    async def create(
+        self,
+        workspace_id: int,
+        channel_account_id: int,
+        external_chat_id: str,
+        metadata: Optional[dict] = None,
+    ) -> Any:
+        pass
+
+
+class IMessageRepository(ABC):
+    @abstractmethod
+    async def get(self, message_id: int) -> Optional[Any]:
+        pass
+
+    @abstractmethod
+    async def list_by_conversation(
+        self,
+        conversation_id: int,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> List[Any]:
+        pass
+
+    @abstractmethod
+    async def create(
+        self,
+        conversation_id: int,
+        sender_id: Optional[int],
+        content: str,
+        media_urls: Optional[list[str]] = None,
+        external_message_id: Optional[str] = None,
+        sequence_id: Optional[int] = None,
+        direction: str = "inbound",
+        status: str = "pending",
+        metadata: Optional[dict] = None,
+    ) -> Any:
+        pass
+
+    @abstractmethod
+    async def update_status(self, message_id: int, status: str) -> Optional[Any]:
+        pass
