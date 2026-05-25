@@ -76,13 +76,24 @@ class CSRFSettings(BaseSettings):
 class ChannelSettings(BaseSettings):
     """External channel API configuration."""
     
+    # Telegram
     telegram_bot_token: Optional[str] = None
-    vk_group_id: Optional[str] = None
-    vk_group_secret: Optional[str] = None
-    whatsapp_phone_id: Optional[str] = None
-    whatsapp_token: Optional[str] = None
-    whatsapp_verify_token: Optional[str] = None
-    max_bot_token: Optional[str] = None
+    
+    # VK
+    vk_group_token: Optional[str] = None
+    vk_group_id: Optional[int] = None
+    vk_confirmation_code: str = "confirm123"  # Set in VK Callback API settings
+    
+    # WhatsApp (Meta Cloud)
+    whatsapp_phone_number_id: Optional[str] = None
+    whatsapp_access_token: Optional[str] = None
+    whatsapp_webhook_verify_token: Optional[str] = None
+    whatsapp_app_secret: Optional[str] = None
+    
+    # MAX (MasterBot)
+    max_api_token: Optional[str] = None
+    max_bot_id: Optional[str] = None
+    max_webhook_secret: Optional[str] = None
     
     model_config = SettingsConfigDict(
         env_prefix="",
