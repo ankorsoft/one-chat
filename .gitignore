@@ -1,69 +1,46 @@
+```
+# Environment
+.env
+.env.local
+.env.*
+
 # Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
-
-# Virtual environments
-env/
-venv/
-.venv/
-ENV/
-.env/
-.ENV/
-.python-version
-
-# IDEs
-.vscode/
-.idea/
+*.pyc
+*.pyo
+*.pyd
+*.py~
+*.py.class
+*.py.backup
 *.swp
 *.swo
-*~
-
-# Environment variables files (keep .env.example)
-.env.local
-*.env.*
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Testing
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-.pytest_cache/
-.mypy_cache/
 
 # Dependencies
-backend/requirements.txt
+.venv/
+venv/
+env/
+ENV/
+.ENV/
 
-# Security - DO NOT commit actual client configs
-# clamav_client.py is code, keep it. Only ignore secrets.
+# Build artifacts
+build/
+dist/
+*.egg-info/
+.coverage
+htmlcov/
+.coverage.*
+.nyc_output/
+coverage-final.json
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# Alembic
+alembic/versions/*.py
+```
