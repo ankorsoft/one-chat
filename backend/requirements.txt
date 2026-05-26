@@ -30,8 +30,9 @@ python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 argon2-cffi==23.1.0
 
-# Antivirus
-aioclamav==1.0.0
+# Antivirus - ClamAV integration
+# aioclamav не доступен, используем прямой socket клиент
+clamd==1.0.2
 
 # WebSocket
 websockets==12.0
