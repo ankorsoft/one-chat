@@ -4,8 +4,10 @@ Scans uploaded files before storage.
 """
 import logging
 from typing import Tuple
+import socket
+import asyncio
 
-import aioclamav
+from clamd import ClamdNetworkSocket
 
 from backend.infrastructure.config import get_settings
 
@@ -43,10 +45,10 @@ class ClamAVClient:
         self._client = None
         self._initialized = True
     
-    async def _get_client(self) -> aioclamav.ClamAV:
+    def _get_client(self) -> ClamdNetworkSocket:
         """Get or create the ClamAV client."""
         if self._client is None:
-            self._client = aioclamav.ClamAV(
+            self._client = ClamdNetworkSocket(
                 host=self.host,
                 port=self.port,
                 timeout=self.timeout,
@@ -66,21 +68,28 @@ class ClamAVClient:
             - signature: Virus signature if found, or error message
         """
         try:
-            client = await self._get_client()
+            client = self._get_client()
             
             # Use stream scanning for memory efficiency
-            result = await client.scan_stream(file_bytes)
+            # Run in executor to avoid blocking
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(
+                None,
+                lambda: client.instream(file_bytes)
+            )
             
-            if result.status == "OK":
+            status = result.get('stream', ('', ''))[0]
+            
+            if status == 'OK':
                 logger.debug("File scan clean")
                 return True, ""
-            elif result.status == "FOUND":
-                signature = result.signature
+            elif status == 'FOUND':
+                signature = result.get('stream', ('', ''))[1]
                 logger.warning(f"Virus detected: {signature}")
                 return False, signature
             else:
-                logger.error(f"Scan error: {result.status}")
-                return False, f"Scan error: {result.status}"
+                logger.error(f"Scan error: {status}")
+                return False, f"Scan error: {status}"
                 
         except Exception as e:
             logger.error(f"ClamAV scan failed: {e}")
@@ -107,10 +116,11 @@ class ClamAVClient:
     async def health_check(self) -> bool:
         """Check ClamAV connection health."""
         try:
-            client = await self._get_client()
+            client = self._get_client()
             # Ping command
-            result = await client.ping()
-            return result == "PONG"
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(None, client.ping)
+            return result == 'PONG'
         except Exception as e:
             logger.error(f"ClamAV health check failed: {e}")
             return False
